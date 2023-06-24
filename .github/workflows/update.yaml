@@ -30,7 +30,7 @@ jobs:
           git checkout
           echo "SDKTAG=`git describe --abbrev=0 --tags`" >> $GITHUB_ENV
           cd ..
-          git clone https://github.com/lmmx/boto-js
+          git clone --depth 1 https://github.com/lmmx/boto-js
           mv botocore/botocore/data/stepfunctions/2016-11-23/examples-1.json boto-js/apis/states-2016-11-23.examples.json
           mv botocore/botocore/data/stepfunctions/2016-11-23/paginators-1.json boto-js/apis/states-2016-11-23.paginators.json
           mv botocore/botocore/data/stepfunctions/2016-11-23/service-2.json boto-js/apis/states-2016-11-23.normal.json
