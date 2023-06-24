@@ -1,14 +1,15 @@
 name: update-aws-apis
 
+# based on https://github.com/APIs-guru/aws2openapi/blob/main/.github/workflows/update.yaml
 # originally based on https://github.com/victoriadrake/victoriadrake/blob/master/.github/workflows/update.yaml
 
 on:
-  push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 19 * * 1-5'
   workflow_dispatch: {}
+  # push:
+  #   branches:
+  #     - main
+  # schedule:
+  #   - cron: '0 19 * * 1-5'
 
 jobs:
   build-and-deploy:
@@ -21,28 +22,26 @@ jobs:
           fetch-depth: 1
       - name: 🍳 Update
         run: |
-          git clone https://github.com/apis-guru/openapi-directory
-          git clone --depth 1 https://github.com/aws/aws-sdk-js
-          cd aws-sdk-js
+          git clone https://github.com/lmmx/aws-openapi-schemas
+          git clone -n --depth 1 --branch 1.29.90 https://github.com/boto/botocore --single-branch --filter=tree:0
+          cd botocore
+          git sparse-checkout set --no-cone botocore/data
+          git checkout
           echo "SDKTAG=`git describe --abbrev=0 --tags`" >> $GITHUB_ENV
           cd ..
           npm i
-          node getPreferred ./aws-sdk-js/apis
-          node aws2openapi ./aws-sdk-js/apis ./openapi-directory/APIs/amazonaws.com -y
+          node getPreferred ./botocore/botocore/data
+          node aws2openapi ./botocore/botocore/data ./aws-openapi-schemas/schemas/botocore -y
       - name: 🚀 Deploy
         id: deploy
         run: |
-          cd openapi-directory/APIs
-          git config user.name "Mike Ralphson"
-          git config user.email "MikeRalphson@users.noreply.github.com"
-          git add amazonaws.com
+          cd aws-openapi-schemas/schemas
+          git config user.name "Louis Maddox"
+          git config user.email "lmmx@users.noreply.github.com"
+          git add botocore
           git diff-index --quiet HEAD || git commit -am "Update AWS APIs to $SDKTAG" && echo "::set-output name=ok::1"
-          git push https://${{ secrets.GH_PAT }}@github.com/apis-guru/openapi-directory.git
-      - name: Trigger oad CI
+          git push https://${{ secrets.GH_PAT }}@github.com/lmmx/aws-openapi-schemas.git
+      - name: Report success
         if: ${{ steps.deploy.outputs.ok == '1' }}
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.GH_PAT }}
-          repository: Mermade/oad
-          event-type: ci
-
+        run: |
+          echo "Deployed successfully"
