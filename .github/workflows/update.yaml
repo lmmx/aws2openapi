@@ -2,6 +2,7 @@ name: update-aws-apis
 
 # based on https://github.com/APIs-guru/aws2openapi/blob/main/.github/workflows/update.yaml
 # originally based on https://github.com/victoriadrake/victoriadrake/blob/master/.github/workflows/update.yaml
+# fine-grained permissions: Actions, Administration, Contents (+ default: Metadata)
 
 on:
   workflow_dispatch: {}
